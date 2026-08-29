@@ -3,6 +3,12 @@ import { createRoot } from "react-dom/client";
 
 import { App } from "./App.js";
 import "./styles.css";
+import { initializeTheme } from "./theme.js";
+
+const initialTheme = initializeTheme(
+  window,
+  document.documentElement,
+);
 
 const rootElement = document.getElementById("root");
 
@@ -12,6 +18,6 @@ if (rootElement === null) {
 
 createRoot(rootElement).render(
   <StrictMode>
-    <App />
+    <App initialTheme={initialTheme} />
   </StrictMode>,
 );

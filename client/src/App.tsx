@@ -14,15 +14,25 @@ import {
   type SocialUser,
   type User,
 } from "./api.js";
+import {
+  getThemeTogglePresentation,
+  toggleTheme,
+  type Theme,
+} from "./theme.js";
 
 type View =
   | { name: "feed" }
   | { name: "profile"; username: string }
   | { name: "social"; userId: string; kind: "followers" | "following" };
 
-export function App(): ReactElement {
+interface AppProps {
+  initialTheme: Theme;
+}
+
+export function App({ initialTheme }: AppProps): ReactElement {
   const [sessionUser, setSessionUser] = useState<User | null | undefined>();
   const [view, setView] = useState<View>({ name: "feed" });
+  const [theme, setTheme] = useState<Theme>(initialTheme);
 
   useEffect(() => {
     requestJson("/api/session", sessionResponseSchema)
@@ -42,13 +52,23 @@ export function App(): ReactElement {
     setView({ name: "profile", username });
   };
 
+  const navigateToFeed = (): void => {
+    setView({ name: "feed" });
+  };
+
+  const handleToggleTheme = (): void => {
+    setTheme(toggleTheme(theme, window, document.documentElement));
+  };
+
   return (
     <div className="app-shell">
       <aside className="sidebar">
-        <button className="brand" onClick={() => setView({ name: "feed" })}>
-          T
-        </button>
-        <button className="nav-button" onClick={() => setView({ name: "feed" })}>
+        <ApplicationHeader
+          theme={theme}
+          onNavigateHome={navigateToFeed}
+          onToggleTheme={handleToggleTheme}
+        />
+        <button className="nav-button" onClick={navigateToFeed}>
           Home
         </button>
         <button
@@ -97,6 +117,56 @@ export function App(): ReactElement {
         <p>Text posts, real follows, and a chronological feed.</p>
       </aside>
     </div>
+  );
+}
+
+interface ApplicationHeaderProps {
+  theme: Theme;
+  onNavigateHome: () => void;
+  onToggleTheme: () => void;
+}
+
+export function ApplicationHeader({
+  theme,
+  onNavigateHome,
+  onToggleTheme,
+}: ApplicationHeaderProps): ReactElement {
+  return (
+    <header className="sidebar-header">
+      <button className="brand" onClick={onNavigateHome}>
+        T
+      </button>
+      <ThemeToggle theme={theme} onToggle={onToggleTheme} />
+    </header>
+  );
+}
+
+interface ThemeToggleProps {
+  theme: Theme;
+  onToggle: () => void;
+}
+
+interface ThemeToggleButtonProps {
+  onClick: () => void;
+  "aria-label": string;
+  title: string;
+}
+
+export function ThemeToggle({
+  theme,
+  onToggle,
+}: ThemeToggleProps): ReactElement<ThemeToggleButtonProps, "button"> {
+  const presentation = getThemeTogglePresentation(theme);
+  return (
+    <button
+      type="button"
+      className="theme-toggle"
+      onClick={onToggle}
+      aria-label={presentation.label}
+      title={presentation.label}
+    >
+      <span aria-hidden="true">{presentation.icon}</span>
+    </button>
   );
 }
 
