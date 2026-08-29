@@ -1,0 +1,14 @@
+services:
+  postgres-test:
+    image: postgres:16-alpine
+    ports:
+      - "127.0.0.1:54329:5432"
+    environment:
+      POSTGRES_DB: tweetly_test
+      POSTGRES_USER: tweetly_test
+      POSTGRES_HOST_AUTH_METHOD: trust
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tweetly_test -d tweetly_test"]
+      interval: 1s
+      timeout: 3s
+      retries: 20
